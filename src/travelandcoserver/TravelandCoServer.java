@@ -5,6 +5,8 @@
  */
 package travelandcoserver;
 
+import java.util.Scanner;
+
 /**
  *
  * @author Stan
@@ -15,7 +17,14 @@ public class TravelandCoServer {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        System.out.println("Server started...");
+        ServerThread serverThread = new ServerThread(); //another thread so this one can listen to input
+        serverThread.start();
+        Scanner sc = new Scanner(System.in);
+        while (!sc.nextLine().equals("quit")) { //input "quit" to stop the server
+
+        }
+        serverThread.end();
     }
     
 }
