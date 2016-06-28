@@ -7,6 +7,7 @@ package travelandcoserver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -25,7 +26,7 @@ public class ServerThread extends Thread {
     private static final int PORT = 6666;
     private final AtomicBoolean listening;
     private Selector selector;
-    private static final int BUFSIZE = 100;
+    private static final int BUFSIZE = 1024;
 
     public ServerThread() {
         listening = new AtomicBoolean();
@@ -70,6 +71,17 @@ public class ServerThread extends Thread {
                 s.configureBlocking(false);
                 s.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                 System.out.println("client accepted");
+            }
+            else if(key.isReadable()) {
+                SocketChannel s = (SocketChannel) key.channel();
+                ByteBuffer buf = ByteBuffer.allocate(BUFSIZE);
+                int bytesRead = s.read(buf);
+                while(bytesRead != -1){
+                    buf.flip();
+                    String output = new String(buf.array()).trim();
+                    System.out.println(output);
+                    bytesRead = s.read(buf);
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);

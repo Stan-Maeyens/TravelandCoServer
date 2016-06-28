@@ -17,6 +17,8 @@ public class TravelandCoServer {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        DatabaseDAO dao = new DatabaseDAO();
+        
         System.out.println("Server started...");
         ServerThread serverThread = new ServerThread(); //another thread so this one can listen to input
         serverThread.start();
