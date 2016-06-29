@@ -5,6 +5,7 @@
  */
 package travelandcoserver;
 
+import data.Travel;
 import data.User;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,6 +15,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,6 +91,88 @@ public class DatabaseDAO {
                 ResultSet rs = stm.executeQuery();
                 if(rs.next()){
                     ret = new User(rs.getString("EMAIL"), rs.getString("PASSWD"), rs.getString("NAME"));
+                }
+            }
+            finally
+            {
+                stm.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+    
+    public boolean addTravel(String name){
+        boolean ret = false;
+        try {
+            PreparedStatement stm = conn.prepareStatement(props.getProperty("CREATE_TRAVEL"));
+            try {
+                stm.setString(1, name);
+                stm.executeUpdate();
+                ret = true;
+            }
+            finally
+            {
+                stm.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+    
+    public boolean removeTravel(int id){
+        boolean ret = false;
+        try {
+            PreparedStatement stm = conn.prepareStatement(props.getProperty("DELETE_TRAVEL"));
+            try {
+                stm.setInt(1, id);
+                stm.executeUpdate();
+                ret = true;
+            }
+            finally
+            {
+                stm.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+    
+    public List<Travel> getTravels(String email){
+        List<Travel> ret = new ArrayList<>();
+        try {
+            PreparedStatement stm = conn.prepareStatement(props.getProperty("GET_TRAVELS"));
+            try {
+                stm.setString(1, email);
+                ResultSet rs = stm.executeQuery();
+                if(rs.next()){
+                    Travel t = new Travel(rs.getInt("TRAVELID"), rs.getString("NAME"));
+                    ret.add(t);
+                }
+            }
+            finally
+            {
+                stm.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+    
+    public List<User> getUsersInTravel(int id){
+        List<User> ret = new ArrayList<>();
+        try {
+            PreparedStatement stm = conn.prepareStatement(props.getProperty("GET_USERS_IN_TRAVEL"));
+            try {
+                stm.setInt(1, id);
+                ResultSet rs = stm.executeQuery();
+                while(rs.next()){
+                    User u = new User(rs.getString("EMAIL"), rs.getString("PASSWD"), rs.getString("NAME"));
+                    ret.add(u);
                 }
             }
             finally

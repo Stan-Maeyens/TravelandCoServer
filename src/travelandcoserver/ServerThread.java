@@ -5,6 +5,7 @@
  */
 package travelandcoserver;
 
+import data.Travel;
 import data.User;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -85,10 +86,7 @@ public class ServerThread extends Thread {
                 int bytesRead = s.read(buf);
                 if (bytesRead > 0) {
                     buf.flip();
-                    List<String> outgoing = handleIncoming(new String(buf.array()).trim());
-                    if (!outgoing.isEmpty()) {
-                        handleOutgoing(s, outgoing);
-                    }
+                    handleIncoming(s, new String(buf.array()).trim());
                 }
                 else{
                     s.close();
@@ -100,7 +98,7 @@ public class ServerThread extends Thread {
         }
     }
 
-    private List<String> handleIncoming(String message) {
+    private void handleIncoming(SocketChannel s, String message) {
         System.out.println("message received: " + message);
         String[] partsIn = message.split(":");
         List<String> partsOut = new ArrayList<>();
@@ -113,6 +111,7 @@ public class ServerThread extends Thread {
             } else {
                 partsOut.add("NOT FOUND");
             }
+            handleOutgoing(s, partsOut);
         } else if (partsIn[0].equals(props.getProperty("add_user"))) {
             try {
                 if (dao.addUser(partsIn[1], partsIn[2], partsIn[3])) {
@@ -124,8 +123,23 @@ public class ServerThread extends Thread {
                 System.err.println("array out of bounds (add_user)");
                 partsOut.add("false");
             }
+            handleOutgoing(s, partsOut);
+        } else if(partsIn[0].equals(props.getProperty("get_travels"))){
+            List<Travel> travels = dao.getTravels(partsIn[1]);
+            partsOut.add(""+travels.size());
+            handleOutgoing(s, partsOut);
+            
+            for(Travel t: travels){
+                partsOut.clear();
+                partsOut.add(""+t.getId());
+                partsOut.add(t.getName());
+                List<User> users = dao.getUsersInTravel(t.getId());
+                for(User u: users){
+                    partsOut.add(u.getName());
+                }
+                handleOutgoing(s, partsOut);
+            }
         }
-        return partsOut;
     }
 
     private void handleOutgoing(SocketChannel s, List<String> parts) {
