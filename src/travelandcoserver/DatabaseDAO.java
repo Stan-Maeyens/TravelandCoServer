@@ -28,8 +28,8 @@ public class DatabaseDAO {
     private Properties props;
 
     public DatabaseDAO() {
-        try {
-            props = getProperties();
+        props = getProperties();
+        try {     
             Class.forName("org.apache.derby.jdbc.ClientDriver");
             conn = DriverManager.getConnection("jdbc:derby://localhost:1527/travelsandco", "travelsandco", "travelsandco");
 
@@ -87,7 +87,7 @@ public class DatabaseDAO {
                 stm.setString(1, email);
                 ResultSet rs = stm.executeQuery();
                 if(rs.next()){
-                    ret = new User(email, rs.getString("PASSWD"), rs.getString("NAME"));
+                    ret = new User(rs.getString("EMAIL"), rs.getString("PASSWD"), rs.getString("NAME"));
                 }
             }
             finally
